@@ -263,7 +263,11 @@ const serverUrl = isLocalhost ? 'http://localhost:3000' : window.location.origin
 fetch(`${serverUrl}/generate-pdf`, {
     
     // Enviar datos al servidor Node.js
-    fetch('http://localhost:3000/generate-pdf', {
+    // Detectar automáticamente la URL del servidor
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const serverUrl = isLocalhost ? 'http://localhost:3000' : window.location.origin;
+
+fetch(`${serverUrl}/generate-pdf`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
