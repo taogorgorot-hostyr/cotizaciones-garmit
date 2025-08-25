@@ -1,4 +1,4 @@
-﻿// Variables globales
+// Variables globales
 let currentFolio = 1;
 let products = [];
 
