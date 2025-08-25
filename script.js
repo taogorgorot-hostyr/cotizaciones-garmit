@@ -254,6 +254,13 @@ function generatePDF() {
     }
     showLoadingScreen();
     const data = collectFormData();
+
+// Detectar automáticamente la URL del servidor
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const serverUrl = isLocalhost ? 'http://localhost:3000' : window.location.origin;
+
+// Usar la URL correcta
+fetch(`${serverUrl}/generate-pdf`, {
     
     // Enviar datos al servidor Node.js
     fetch('http://localhost:3000/generate-pdf', {
