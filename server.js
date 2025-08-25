@@ -110,6 +110,59 @@ app.post('/generate-pdf', (req, res) => {
     }
 });
 
+// --- Folio Endpoints ---
+
+const FOLIO_FILE = path.join(__dirname, 'folio.json');
+
+// Función para leer el folio
+async function readFolio() {
+    try {
+        const data = await fs.promises.readFile(FOLIO_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        // Si el archivo no existe, crearlo con valor inicial
+        if (error.code === 'ENOENT') {
+            await fs.promises.writeFile(FOLIO_FILE, JSON.stringify({ currentFolio: 1 }, null, 2));
+            return { currentFolio: 1 };
+        }
+        console.error('Error reading folio file:', error);
+        throw error;
+    }
+}
+
+// Función para escribir el folio
+async function writeFolio(data) {
+    try {
+        await fs.promises.writeFile(FOLIO_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error writing folio file:', error);
+        throw error;
+    }
+}
+
+// Endpoint para obtener el folio actual
+app.get('/api/folio', async (req, res) => {
+    try {
+        const folioData = await readFolio();
+        res.json(folioData);
+    } catch (error) {
+        res.status(500).json({ error: 'Could not read folio.' });
+    }
+});
+
+// Endpoint para incrementar el folio
+app.post('/api/folio/increment', async (req, res) => {
+    try {
+        const folioData = await readFolio();
+        folioData.currentFolio++;
+        await writeFolio(folioData);
+        res.json(folioData); // Devuelve el nuevo folio
+    } catch (error) {
+        res.status(500).json({ error: 'Could not increment folio.' });
+    }
+});
+
+
 // Servir archivos estáticos
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

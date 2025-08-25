@@ -1,5 +1,4 @@
 // Variables globales
-let currentFolio = 1;
 let products = [];
 
 // Configuración de usuario
@@ -17,10 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 });
 
-function initializeApp() {
+async function initializeApp() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fecha').value = today;
-    loadFolio();
+    await loadInitialFolio();
     setupEventListeners();
     addProduct();
 
@@ -157,14 +156,59 @@ function showLoginForm() {
     }
 }
 
-function loadFolio() {
-    const savedFolio = localStorage.getItem('garmit_folio');
-    if (savedFolio) currentFolio = parseInt(savedFolio);
-    document.getElementById('folio').value = String(currentFolio).padStart(6, '0');
+// --- Folio Management (Server-Side) ---
+
+async function getFolioFromServer() {
+    try {
+        // ----------- CORRECCIÓN: URL FIJA EN PRODUCCIÓN -----------
+        let serverUrl;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            serverUrl = 'http://localhost:3000';
+        } else {
+            serverUrl = 'https://garmit-cotizaciones.onrender.com';
+        }
+        // ----------------------------------------------------------
+        const response = await fetch(`${serverUrl}/api/folio`);
+        if (!response.ok) {
+            throw new Error('Could not fetch folio from server.');
+        }
+        const data = await response.json();
+        return data.currentFolio;
+    } catch (error) {
+        console.error("Error fetching folio:", error);
+        // Fallback to a default value if server is unreachable
+        return 1;
+    }
 }
 
-function saveFolio() {
-    localStorage.setItem('garmit_folio', currentFolio.toString());
+async function incrementFolioOnServer() {
+    try {
+        // ----------- CORRECCIÓN: URL FIJA EN PRODUCCIÓN -----------
+        let serverUrl;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            serverUrl = 'http://localhost:3000';
+        } else {
+            serverUrl = 'https://garmit-cotizaciones.onrender.com';
+        }
+        // ----------------------------------------------------------
+        const response = await fetch(`${serverUrl}/api/folio/increment`, { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Could not increment folio on server.');
+        }
+        const data = await response.json();
+        return data.currentFolio;
+    } catch (error) {
+        console.error("Error incrementing folio:", error);
+        // If server fails, just increment locally as a fallback for the current session
+        const currentFolioInput = document.getElementById('folio');
+        let currentFolioNumber = parseInt(currentFolioInput.value) || 0;
+        return currentFolioNumber + 1;
+    }
+}
+
+async function loadInitialFolio() {
+    const folio = await getFolioFromServer();
+    document.getElementById('folio').value = String(folio).padStart(6, '0');
 }
 
 function addProduct() {
@@ -230,7 +274,7 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-function clearForm() {
+async function clearForm() {
     if (confirm('¿Está seguro de que desea limpiar el formulario?')) {
         document.getElementById('nombreCliente').value = '';
         document.getElementById('email').value = '';
@@ -239,15 +283,14 @@ function clearForm() {
         document.getElementById('notas').value = '';
         document.getElementById('productsContainer').innerHTML = '';
         addProduct();
-        currentFolio++;
-        saveFolio();
-        document.getElementById('folio').value = String(currentFolio).padStart(6, '0');
+        const newFolio = await incrementFolioOnServer();
+        document.getElementById('folio').value = String(newFolio).padStart(6, '0');
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('fecha').value = today;
     }
 }
 
-function generatePDF() {
+async function generatePDF() {
     if (!validateForm()) {
         alert('Por favor, complete todos los campos requeridos.');
         return;
@@ -266,27 +309,28 @@ function generatePDF() {
     }
     // ----------------------------------------------------------
 
-    fetch(`${serverUrl}/generate-pdf`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            productos: data.productos,
-            subtotal: data.totales.subtotal,
-            iva: data.totales.iva,
-            total: data.totales.total,
-            cliente: data.cliente.nombre,
-            fecha: data.fecha
-        })
-    })
-    .then(response => {
+    try {
+        const response = await fetch(`${serverUrl}/generate-pdf`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                productos: data.productos,
+                subtotal: data.totales.subtotal,
+                iva: data.totales.iva,
+                total: data.totales.total,
+                cliente: data.cliente.nombre,
+                fecha: data.fecha
+            })
+        });
+
         if (!response.ok) {
-            throw new Error('Error en el servidor');
+            throw new Error('Error en el servidor al generar el PDF');
         }
-        return response.blob();
-    })
-    .then(blob => {
+
+        const blob = await response.blob();
+
         // Crear URL para descargar el PDF
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -298,19 +342,18 @@ function generatePDF() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        // Incrementar folio automáticamente después de generar PDF
-        currentFolio++;
-        saveFolio();
-        document.getElementById('folio').value = String(currentFolio).padStart(6, '0');
+        // Incrementar folio en el servidor
+        const newFolio = await incrementFolioOnServer();
+        document.getElementById('folio').value = String(newFolio).padStart(6, '0');
 
         hideLoadingScreen();
         alert('PDF generado exitosamente!');
-    })
-    .catch(error => {
+
+    } catch (error) {
         console.error('Error:', error);
         hideLoadingScreen();
         alert('Error al generar el PDF. Asegúrate de que el servidor esté ejecutándose.');
-    });
+    }
 }
 
 function validateForm() {
