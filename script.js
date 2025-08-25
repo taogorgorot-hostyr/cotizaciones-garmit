@@ -255,11 +255,16 @@ function generatePDF() {
     showLoadingScreen();
     const data = collectFormData();
 
-    // Detectar automáticamente la URL del servidor (Render en producción)
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const serverUrl = isLocalhost
-        ? 'http://localhost:3000'
-        : 'https://garmit-cotizaciones.onrender.com';
+    // ----------- CORRECCIÓN: URL FIJA EN PRODUCCIÓN -----------
+    // Siempre enviar a Render en producción
+    let serverUrl;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        serverUrl = 'http://localhost:3000';
+    } else {
+        // SIEMPRE usar la URL de Render
+        serverUrl = 'https://garmit-cotizaciones.onrender.com';
+    }
+    // ----------------------------------------------------------
 
     fetch(`${serverUrl}/generate-pdf`, {
         method: 'POST',
