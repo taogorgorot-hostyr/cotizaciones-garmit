@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Garmit</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { color: red; margin-top: 10px; }
+        .success { color: green; margin-top: 10px; }
+        .debug { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Test de Login - Garmit</h2>
+        <div class="debug" id="debugInfo">
+            <strong>Debug Info:</strong><br>
+            Credenciales válidas:<br>
+            Usuario: garmitadmin<br>
+            Contraseña: garmit2025$<br>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" id="loginBtn">Iniciar Sesión</button>
+            <div id="loginError" class="error"></div>
+            <div id="loginSuccess" class="success"></div>
+        </form>
+        
+        <div class="debug" id="debugLog"></div>
+    </div>
+
+    <script>
+        const VALID_CREDENTIALS = {
+            username: 'garmitadmin',
+            password: 'garmit2025$'
+        };
+        
+        function log(message) {
+            console.log(message);
+            const debugLog = document.getElementById('debugLog');
+            debugLog.innerHTML += message + '<br>';
+        }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            log('🔄 Procesando login...');
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+            const successDiv = document.getElementById('loginSuccess');
+            
+            log('📝 Usuario ingresado: "' + username + '"');
+            log('📝 Contraseña ingresada: "' + password + '"');
+            log('🔍 Comparando con: "' + VALID_CREDENTIALS.username + '" / "' + VALID_CREDENTIALS.password + '"');
+            
+            const userMatch = username === VALID_CREDENTIALS.username;
+            const passMatch = password === VALID_CREDENTIALS.password;
+            
+            log('✔️ Usuario coincide: ' + userMatch);
+            log('✔️ Contraseña coincide: ' + passMatch);
+            
+            if (userMatch && passMatch) {
+                log('🎉 LOGIN EXITOSO!');
+                errorDiv.textContent = '';
+                successDiv.textContent = '¡Login exitoso! Redirigiendo...';
+                
+                // Simular redirección
+                setTimeout(() => {
+                    alert('¡Login exitoso! En la aplicación real, aquí se mostraría la interfaz de cotizaciones.');
+                }, 1000);
+            } else {
+                log('❌ LOGIN FALLIDO');
+                successDiv.textContent = '';
+                errorDiv.textContent = 'Usuario o contraseña incorrectos';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            log('✅ DOM cargado correctamente');
+            log('✅ Credenciales configuradas: ' + VALID_CREDENTIALS.username);
+            
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+                log('✅ Event listener (submit) agregado');
+            }
+            
+            // Event listener alternativo en el botón
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function(e) {
+                    if (e.target.type === 'submit') {
+                        // El evento submit ya se encargará
+                        return;
+                    }
+                    handleLogin(e);
+                });
+                log('✅ Event listener (click) agregado como respaldo');
+            }
+        });
+    </script>
+</body>
+</html>

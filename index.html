@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Cotizaciones Garmit - Desarrollo, Mantención y Obras Menores SPA">
+    <meta name="keywords" content="cotizaciones, garmit, desarrollo, mantención, obras">
+    <meta name="author" content="Garmit SPA">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./styles.css" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" as="script">
+    
+    <title>Sistema de Cotizaciones - Garmit SPA</title>
+    <link rel="stylesheet" href="./styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./garmit_color1.png">
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <div class="logo">
+                <img src="./garmit_color1.png" alt="Garmit Logo" class="logo-img" loading="lazy">
+                <h1>GARMIT</h1>
+                <p>Sistema de Cotizaciones</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Iniciar Sesión</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-container" id="mainContainer" style="display: none;">
+        <header>
+            <div class="header-content">
+                <h1>GARMIT - Sistema de Cotizaciones</h1>
+                <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="cotization-form">
+                <div class="form-header">
+                    <h2>Nueva Cotización</h2>
+                    <div class="form-info">
+                        <div class="info-group">
+                            <label for="fecha">Fecha:</label>
+                            <input type="date" id="fecha" name="fecha">
+                        </div>
+                        <div class="info-group">
+                            <label for="folio">Folio:</label>
+                            <input type="text" id="folio" name="folio" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="client-info">
+                    <h3>Datos del Cliente</h3>
+                    <div class="client-grid">
+                        <div class="form-group">
+                            <label for="nombreCliente">Nombre:</label>
+                            <input type="text" id="nombreCliente" name="nombreCliente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fono">Teléfono:</label>
+                            <input type="tel" id="fono" name="fono" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="direccion">Dirección:</label>
+                            <input type="text" id="direccion" name="direccion" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="products-section">
+                    <h3>Productos/Servicios</h3>
+                    <div class="products-header">
+                        <span>Descripción</span>
+                        <span>Precio Unitario</span>
+                        <span>Cantidad</span>
+                        <span>Total</span>
+                        <span>Acciones</span>
+                    </div>
+                    <div id="productsContainer">
+                        <!-- Los productos se agregarán dinámicamente aquí -->
+                    </div>
+                    <button type="button" id="addProductBtn" class="add-btn">+ Agregar Producto</button>
+                </div>
+
+                <div class="notes-section">
+                    <h3>Notas</h3>
+                    <textarea id="notas" name="notas" placeholder="Ingrese notas adicionales sobre el servicio cotizado..."></textarea>
+                </div>
+
+                <div class="totals-section">
+                    <div class="totals-grid">
+                        <div class="total-row">
+                            <span>Subtotal (Neto):</span>
+                            <span id="subtotal">$0</span>
+                        </div>
+                        <div class="total-row">
+                            <span>IVA (19%):</span>
+                            <span id="iva">$0</span>
+                        </div>
+                        <div class="total-row total-final">
+                            <span>Total:</span>
+                            <span id="total">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="generatePdfBtn" class="generate-btn">Generar PDF</button>
+                    <button type="button" id="clearFormBtn" class="clear-btn">Limpiar Formulario</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Pantalla de carga -->
+    <div id="loadingScreen" class="loading-screen" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <img src="garmit_color1.png" alt="Garmit Logo" class="loading-logo-img">
+            </div>
+            <h3>Generando PDF...</h3>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressText" class="progress-text">0%</div>
+            </div>
+            <div id="loadingStatus" class="loading-status">Iniciando generación...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="./script.js?v=5" defer></script>
+</body>
+</html>
